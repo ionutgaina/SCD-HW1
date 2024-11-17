@@ -22,10 +22,14 @@ OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)
 
 CFLAGS += -g -I/usr/include/tirpc
 LDLIBS += -lnsl -ltirpc
+RPCGENFLAGS = -aNC
 
 # Targets 
 
 all : $(CLIENT) $(SERVER)
+
+$(TARGETS) : $(SOURCES.x) 
+	rpcgen $(RPCGENFLAGS) $(SOURCES.x)
 
 $(OBJECTS_CLNT) : $(SOURCES_CLNT.c) $(SOURCES_CLNT.h) $(TARGETS_CLNT.c) 
 
@@ -37,6 +41,6 @@ $(CLIENT) : $(OBJECTS_CLNT)
 $(SERVER) : $(OBJECTS_SVC) 
 	$(LINK.c) -o $(SERVER) $(OBJECTS_SVC) $(LDLIBS)
 
-clean:
-	 $(RM) core *.o $(CLIENT) $(SERVER)
+ clean:
+	 $(RM) core $(TARGETS) $(OBJECTS_CLNT) $(OBJECTS_SVC) $(CLIENT) $(SERVER)
 
