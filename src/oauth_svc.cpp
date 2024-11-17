@@ -4,6 +4,7 @@
  */
 
 #include "oauth.h"
+#include "server.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <rpc/pmap_clnt.h>
@@ -139,6 +140,12 @@ main (int argc, char **argv)
 	}
 	if (!svc_register(transp, OAUTH_PROG, OAUTH_VERS, oauth_prog_1, IPPROTO_TCP)) {
 		fprintf (stderr, "%s", "unable to register (OAUTH_PROG, OAUTH_VERS, tcp).");
+		exit(1);
+	}
+
+	std::string error = init_server(argc, argv);
+	if (error != "") {
+		fprintf(stderr, "%s", error.c_str());
 		exit(1);
 	}
 

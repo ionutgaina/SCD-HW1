@@ -1,14 +1,9 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <string>
 
-// TODO
+// Declare the function using standard C++ conventions
+std::string init_server(int argc, char **argv);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* SERVER_H */
+#endif // SERVER_H
