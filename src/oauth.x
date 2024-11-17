@@ -11,50 +11,50 @@ enum StatusCode {
 
 struct AuthRequest {
     string user_id<>;
-}
+};
 
 struct AuthResponse {
     string token<>;
     StatusCode status;
-}
+};
 
 struct ApproveTokenRequest {
     string token<>;
-}
+};
 
 struct ApproveTokenResponse {
     string token<>;
 	int perms;
     StatusCode status;
-}
+};
 
 struct OauthAccessTokenRequest {
 	string user_id<>;
 	string token<>;
 	bool is_refresh_token;
-}
+};
 
 
 struct OauthRefreshTokenRequest {
     string token<>;
-}
+};
 
 struct OauthAccessTokenResponse {
     string token<>;
     string refresh_token<>;
     int ttl;
     StatusCode status;
-}
+};
 
 struct ExecuteActionRequest {
 	string token<>;
 	string action<>;
 	string resource<>;
-}
+};
 
 struct ExecuteActionResponse {
     StatusCode status;
-}
+};
 
 program OAUTH_PROG {
     version OAUTH_VERS {
