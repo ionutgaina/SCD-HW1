@@ -29,10 +29,9 @@ struct ApproveTokenResponse {
 }
 
 struct OauthAccessTokenRequest {
-	string client_id<>;
-	string auth_token<>;
+	string user_id<>;
+	string token<>;
 	bool is_refresh_token;
-	int perms;
 }
 
 
@@ -54,7 +53,6 @@ struct ExecuteActionRequest {
 }
 
 struct ExecuteActionResponse {
-
     StatusCode status;
 }
 
