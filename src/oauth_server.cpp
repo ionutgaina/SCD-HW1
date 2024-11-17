@@ -5,6 +5,7 @@
  */
 
 #include "oauth.h"
+#include "server.h"
 
 AuthResponse *
 auth_1_svc(AuthRequest arg1,  struct svc_req *rqstp)

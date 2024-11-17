@@ -5,6 +5,7 @@
  */
 
 #include "oauth.h"
+#include "client.h"
 
 
 void
