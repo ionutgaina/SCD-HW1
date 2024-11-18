@@ -18,11 +18,6 @@ std::string init_server(int argc, char **argv);
 
 class DB {
 private:
-    std::unordered_map<std::string, std::string> clients;
-    std::unordered_set<std::string> resources;
-    std::queue<std::pair<std::string, std::string>> approvals;
-    int token_validity;
-
     bool read_file(const std::string& filename, std::vector<std::string>& lines) {
         std::ifstream file_stream(filename);
         if (!file_stream.is_open()) {
@@ -101,6 +96,11 @@ private:
     }
 
 public:
+    std::unordered_map<std::string, std::string> clients;
+    std::unordered_set<std::string> resources;
+    std::queue<std::pair<std::string, std::string>> approvals;
+    int token_validity;
+
     DB(const std::string& client_file, const std::string& resources_file, const std::string& approval_file, int token_validity)
         : token_validity(token_validity)
     {
@@ -123,9 +123,10 @@ public:
         }
 
         std::cout << "Approvals:" << std::endl;
-        while (!approvals.empty()) {
-            std::cout << approvals.front().first << " " << approvals.front().second << std::endl;
-            approvals.pop();
+        std::queue<std::pair<std::string, std::string>> approvals_copy = approvals;
+        while (!approvals_copy.empty()) {
+            std::cout << approvals_copy.front().first << " " << approvals_copy.front().second << std::endl;
+            approvals_copy.pop();
         }
     }
 };

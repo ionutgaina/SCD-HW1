@@ -62,10 +62,12 @@ main (int argc, char *argv[])
 {
 	char *host;
 
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
+	std::string error = init_client(argc, argv);
+	if (error != "") {
+		printf("%s", error.c_str());
+		exit(1);
 	}
+
 	host = argv[1];
 	oauth_prog_1 (host);
 exit (0);
