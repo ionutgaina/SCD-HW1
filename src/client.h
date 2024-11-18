@@ -1,5 +1,5 @@
 #ifndef CLIENT_H
-#define CIENT_H
+#define CLIENT_H
 
 #include <iostream>
 #include <fstream>
@@ -7,14 +7,9 @@
 #include <queue>
 #include <tuple>
 #include <string>
+#include <vector>
 
-class Client;
-
-extern Client client;
-
-std::string init_client(int argc, char **argv);
-
-class Client {
+class MyClient {
     private:
         bool read_file(const std::string& filename, std::vector<std::string>& lines) {
             std::ifstream file_stream(filename);
@@ -52,25 +47,29 @@ class Client {
     public:
         std::queue<std::tuple<std::string, std::string, int>> requests;
 
-        Client(const std::string& input_file) {
+        MyClient() = default;
+
+        explicit MyClient(const std::string& input_file) {
             load_input(input_file);
             print_all();
         }
 
-        ~Client() = default;
+        ~MyClient() = default;
 
-        void print_all() {
+        void print_all() const {
             std::cout << "Client Input:" << std::endl;
             std::queue<std::tuple<std::string, std::string, int>> requests_copy = requests;
             while (!requests_copy.empty()) {
-                std::cout << std::get<0>(requests_copy.front()) << " " << std::get<1>(requests_copy.front()) << " " << std::get<2>(requests_copy.front()) << std::endl;
+                std::cout << std::get<0>(requests_copy.front()) << " " 
+                          << std::get<1>(requests_copy.front()) << " "
+                          << std::get<2>(requests_copy.front()) << std::endl;
                 requests_copy.pop();
             }
         }
-
-
-
 };
 
+extern MyClient client;
+
+std::string init_client(int argc, char **argv);
 
 #endif /* CLIENT_H */

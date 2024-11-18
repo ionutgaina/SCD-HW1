@@ -7,60 +7,48 @@
 #include "oauth.h"
 #include "client.h"
 
+using namespace std;
 
-void
-oauth_prog_1(char *host)
-{
 	CLIENT *clnt;
-	AuthResponse  *result_1;
-	AuthRequest auth_1_arg1;
-	ApproveTokenResponse  *result_2;
-	ApproveTokenRequest approve_token_1_arg1;
-	OauthAccessTokenResponse  *result_3;
-	OauthAccessTokenRequest oauth_access_token_1_arg1;
-	OauthAccessTokenResponse  *result_4;
-	OauthRefreshTokenRequest oauth_refresh_token_1_arg1;
-	ExecuteActionResponse  *result_5;
-	ExecuteActionRequest execute_action_1_arg1;
 
-#ifndef	DEBUG
-	clnt = clnt_create (host, OAUTH_PROG, OAUTH_VERS, "udp");
-	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
-	}
-#endif	/* DEBUG */
+// 	CLIENT *clnt;
+// 	AuthResponse  *result_1;
+// 	AuthRequest auth_1_arg1;
+// 	ApproveTokenResponse  *result_2;
+// 	ApproveTokenRequest approve_token_1_arg1;
+// 	OauthAccessTokenResponse  *result_3;
+// 	OauthAccessTokenRequest oauth_access_token_1_arg1;
+// 	OauthAccessTokenResponse  *result_4;
+// 	OauthRefreshTokenRequest oauth_refresh_token_1_arg1;
+// 	ExecuteActionResponse  *result_5;
+// 	ExecuteActionRequest execute_action_1_arg1;
 
-	result_1 = auth_1(auth_1_arg1, clnt);
-	if (result_1 == (AuthResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_2 = approve_token_1(approve_token_1_arg1, clnt);
-	if (result_2 == (ApproveTokenResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_3 = oauth_access_token_1(oauth_access_token_1_arg1, clnt);
-	if (result_3 == (OauthAccessTokenResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_4 = oauth_refresh_token_1(oauth_refresh_token_1_arg1, clnt);
-	if (result_4 == (OauthAccessTokenResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_5 = execute_action_1(execute_action_1_arg1, clnt);
-	if (result_5 == (ExecuteActionResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-#ifndef	DEBUG
-	clnt_destroy (clnt);
-#endif	 /* DEBUG */
-}
-
+// 	result_1 = auth_1(auth_1_arg1, clnt);
+// 	if (result_1 == (AuthResponse *) NULL) {
+// 		clnt_perror (clnt, "call failed");
+// 	}
+// 	result_2 = approve_token_1(approve_token_1_arg1, clnt);
+// 	if (result_2 == (ApproveTokenResponse *) NULL) {
+// 		clnt_perror (clnt, "call failed");
+// 	}
+// 	result_3 = oauth_access_token_1(oauth_access_token_1_arg1, clnt);
+// 	if (result_3 == (OauthAccessTokenResponse *) NULL) {
+// 		clnt_perror (clnt, "call failed");
+// 	}
+// 	result_4 = oauth_refresh_token_1(oauth_refresh_token_1_arg1, clnt);
+// 	if (result_4 == (OauthAccessTokenResponse *) NULL) {
+// 		clnt_perror (clnt, "call failed");
+// 	}
+// 	result_5 = execute_action_1(execute_action_1_arg1, clnt);
+// 	if (result_5 == (ExecuteActionResponse *) NULL) {
+// 		clnt_perror (clnt, "call failed");
+// 	}
 
 int
 main (int argc, char *argv[])
 {
 	char *host;
+
 
 	std::string error = init_client(argc, argv);
 	if (error != "") {
@@ -69,6 +57,34 @@ main (int argc, char *argv[])
 	}
 
 	host = argv[1];
-	oauth_prog_1 (host);
+
+
+	#ifndef	DEBUG
+		clnt = clnt_create (host, OAUTH_PROG, OAUTH_VERS, "udp");
+		if (clnt == NULL) {
+			clnt_pcreateerror (host);
+			exit (1);
+		}
+	#endif	/* DEBUG */
+
+	cout << "Client requests:" << endl;
+	while(client.requests.empty() == false) {
+		std::tuple<std::string, std::string, int> request = client.requests.front();
+		client.requests.pop();
+
+		cout << "Request: " << std::get<0>(request) << " " << std::get<1>(request) << " " << std::get<2>(request) << endl;
+
+		std::string action = std::get<1>(request);
+		if (action == "REQUEST") {
+			// TODO Request
+		} else {
+			// TODO Action
+		}
+	}
+
+	#ifndef	DEBUG
+		clnt_destroy (clnt);
+	#endif	 /* DEBUG */
+
 exit (0);
 }
