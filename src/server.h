@@ -16,7 +16,6 @@ struct ClientData {
     std::string access_token;
     std::string refresh_token;
     std::string perms;
-    bool is_signed = false;
     int ttl;
 };
 
@@ -79,30 +78,21 @@ private:
         std::vector<std::string> lines;
         if (!read_file(approval_file, lines)) return;
 
+        if (lines.empty()) {
+            std::cerr << "Error: Approvals file is empty." << std::endl;
+            return;
+        }
+
         for (const auto& line : lines) {
-            std::stringstream ss(line);
-            std::string item;
-            std::vector<std::string> items;
-
-            while (std::getline(ss, item, ',')) {
-                items.push_back(item);
-            }
-
-            if (items.size() % 2 != 0) {
-                std::cerr << "Warning: Approval data format error in line: " << line << std::endl;
-                continue;
-            }
-
-            for (size_t i = 0; i < items.size() - 1; i += 2) {
-                approvals.push(std::make_pair(items[i], items[i + 1]));
-            }
+            approvals.push(line);
         }
     }
 
 public:
     std::unordered_map<std::string, ClientData> clients;
+    std::unordered_map<std::string, std::string> client_tokens_approval;
     std::unordered_set<std::string> resources;
-    std::queue<std::pair<std::string, std::string>> approvals;
+    std::queue<std::string> approvals;
     int token_validity;
 
     DB(const std::string& client_file, const std::string& resources_file, const std::string& approval_file, int token_validity)
@@ -128,10 +118,10 @@ public:
         }
 
         std::cout << "Approvals:" << std::endl;
-        std::queue<std::pair<std::string, std::string>> approvals_copy = approvals;
-        while (!approvals_copy.empty()) {
-            std::cout << approvals_copy.front().first << " " << approvals_copy.front().second << std::endl;
-            approvals_copy.pop();
+        std::queue<std::string> temp = approvals;
+        while (!temp.empty()) {
+            std::cout << temp.front() << std::endl;
+            temp.pop();
         }
     }
 

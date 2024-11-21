@@ -54,8 +54,6 @@ request_operation(tuple<string, string, int> operation)
 	req.user_id = (char *)id.c_str();
 	AuthResponse *result = auth_1(req, clnt);
 
-	cout << result->token << endl;
-
 	if (result == (AuthResponse *) NULL) {
 		clnt_perror (clnt, "call failed auth request");
 	}
@@ -73,12 +71,10 @@ request_operation(tuple<string, string, int> operation)
 		clnt_perror (clnt, "call failed approve request");
 	}
 
-	if (result_2->status == StatusCode::REQUEST_DENIED_) {
-		cout << "REQUEST_DENIED\n" << endl;
-		return;
-	}
-
-	OauthAccessTokenRequest oauth_access_token_1_arg1 = {result_2->token};
+	OauthAccessTokenRequest oauth_access_token_1_arg1;
+	oauth_access_token_1_arg1.user_id = (char *)id.c_str();
+	oauth_access_token_1_arg1.token = result->token;
+	oauth_access_token_1_arg1.is_refresh_token = get<2>(operation);
 	OauthAccessTokenResponse *result_3 = oauth_access_token_1(oauth_access_token_1_arg1, clnt);
 
 	if (result_3 == (OauthAccessTokenResponse *) NULL) {

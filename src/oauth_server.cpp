@@ -18,7 +18,9 @@ auth_1_svc(AuthRequest arg1,  struct svc_req *rqstp)
 	static AuthResponse result;
 
 	string id = arg1.user_id;
-	
+
+	cout << "BEGIN " << id << " AUTHZ\n";
+
 	if (db.clients.find(id) == db.clients.end()) {
 		result.status = StatusCode::USER_NOT_FOUND_;
 		result.token = "";
@@ -38,32 +40,23 @@ approve_token_1_svc(ApproveTokenRequest arg1,  struct svc_req *rqstp)
 {
 	static ApproveTokenResponse  result;
 
-	string token = arg1.token;
+	string approval = db.approvals.front();
+	db.approvals.pop();
 
-	for (auto& client : db.clients) {
-		auto id = client.first;
-
-		if (generate_access_token((char *)id.c_str()) == token) {
-			pair<string, string> approval = db.approvals.front();
-			db.approvals.pop();
-
-			if (approval.first == "*" && approval.second == "-") {
-				client.second.is_signed = false;
-			} else {
-				client.second.is_signed = true;
-			}
-			client.second.perms = approval.second;
-
-			result.token = (char *)token.c_str();
-			result.perms = (char *)client.second.perms.c_str();
-			result.status = StatusCode::OK_;
-			return &result;
-		}
+	if (approval == "*,-") {
+		result.token = arg1.token;
+		result.perms = "";
+		result.status = StatusCode::OK_;
+		return &result;
 	}
 
-	result.token = "";
-	result.perms = "";
-	result.status = StatusCode::REQUEST_DENIED_;
+	// SAVE APPROVAL
+	db.client_tokens_approval[arg1.token] = approval;
+
+	result.token = arg1.token;
+	result.perms = (char *)approval.c_str();
+	result.status = StatusCode::OK_;
+
 	return &result;
 }
 
@@ -88,7 +81,10 @@ oauth_access_token_1_svc(OauthAccessTokenRequest arg1,  struct svc_req *rqstp)
 
 	auto client = db.clients[id];
 
-	if (!client.is_signed) {
+	if (db.client_tokens_approval.find(token) == db.client_tokens_approval.end()) {
+		result.token = "";
+		result.refresh_token = "";
+		result.ttl = 0;
 		result.status = StatusCode::REQUEST_DENIED_;
 		return &result;
 	}
