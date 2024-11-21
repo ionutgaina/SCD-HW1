@@ -59,7 +59,7 @@ request_operation(tuple<string, string, int> operation)
 	}
 
 	if (result->status == StatusCode::USER_NOT_FOUND_) {
-		cout << "USER_NOT_FOUND\n" << endl;
+		cout << "USER_NOT_FOUND" << endl;
 		return;
 	}
 
@@ -82,13 +82,12 @@ request_operation(tuple<string, string, int> operation)
 	}
 
 	if (result_3->status != StatusCode::OK_) {
-		cout << "REQUEST_DENIED\n" << endl;
+		cout << "REQUEST_DENIED" << endl;
 		return;
 	}
 
 	cout << result_2->token << " -> " << result_3->token;
-
-	if (result_3->refresh_token != NULL) {
+	if (strlen(result_3->refresh_token) > 0) {
 		cout << "," << result_3->refresh_token << endl;
 	} else {
 		cout << endl;
@@ -124,7 +123,6 @@ main (int argc, char *argv[])
 
 		string action = get<1>(request);
 		if (action == "REQUEST") {
-			cout << "REQUEST " << get<0>(request) << " " << get<2>(request) << endl;
 			request_operation(request);
 		} else {
 			// TODO Action

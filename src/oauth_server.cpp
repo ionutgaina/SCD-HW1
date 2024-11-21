@@ -91,6 +91,7 @@ oauth_access_token_1_svc(OauthAccessTokenRequest arg1,  struct svc_req *rqstp)
 
 	// UPDATE TOKEN
 	client.access_token = generate_access_token((char *)token.c_str());
+	client.refresh_token = "";
 	client.ttl = db.token_validity;
 	cout << "  AccessToken = " << client.access_token << endl;
 
