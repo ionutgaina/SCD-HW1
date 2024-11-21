@@ -121,7 +121,7 @@ oauth_refresh_token_1_svc(OauthRefreshTokenRequest arg1,  struct svc_req *rqstp)
 			// UPDATE TOKENs
 			cout << "BEGIN " << id << " AUTHZ REFRESH\n";
 
-			client.second.access_token = generate_access_token((char *)id.c_str());
+			client.second.access_token = generate_access_token(efresh_token);
 			cout << "  AccessToken = " << client.second.access_token << "\n";
 			
 			client.second.refresh_token = generate_access_token((char *)client.second.access_token.c_str());
