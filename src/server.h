@@ -10,10 +10,6 @@
 #include <queue>
 #include <vector>
 
-class DB;
-
-extern DB db;
-
 std::string init_server(int argc, char **argv);
 
 struct ClientData {

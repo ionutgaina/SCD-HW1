@@ -10,6 +10,7 @@
 using namespace std;
 
 	CLIENT *clnt;
+	MyClient client;
 
 // 	CLIENT *clnt;
 // 	AuthResponse  *result_1;
@@ -49,11 +50,14 @@ request_operation(tuple<string, string, int> operation)
 {
 	string id = get<0>(operation);
 
-	AuthRequest req = {(char *)id.c_str()};
+	AuthRequest req;
+	req.user_id = (char *)id.c_str();
 	AuthResponse *result = auth_1(req, clnt);
 
+	cout << result->token << endl;
+
 	if (result == (AuthResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
+		clnt_perror (clnt, "call failed auth request");
 	}
 
 	if (result->status == StatusCode::USER_NOT_FOUND_) {
@@ -66,18 +70,33 @@ request_operation(tuple<string, string, int> operation)
 	ApproveTokenResponse *result_2 = approve_token_1(approve_token_1_arg1, clnt);
 
 	if (result_2 == (ApproveTokenResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
+		clnt_perror (clnt, "call failed approve request");
 	}
-	
-	OauthAccessTokenRequest oauth_access_token_1_arg1 = {result->token};
+
+	if (result_2->status == StatusCode::REQUEST_DENIED_) {
+		cout << "REQUEST_DENIED\n" << endl;
+		return;
+	}
+
+	OauthAccessTokenRequest oauth_access_token_1_arg1 = {result_2->token};
 	OauthAccessTokenResponse *result_3 = oauth_access_token_1(oauth_access_token_1_arg1, clnt);
 
 	if (result_3 == (OauthAccessTokenResponse *) NULL) {
-		clnt_perror (clnt, "call failed");
+		clnt_perror (clnt, "call failed access request");
 	}
 
-	// TODO status check
-	
+	if (result_3->status != StatusCode::OK_) {
+		cout << "REQUEST_DENIED\n" << endl;
+		return;
+	}
+
+	cout << result_2->token << " -> " << result_3->token;
+
+	if (result_3->refresh_token != NULL) {
+		cout << "," << result_3->refresh_token << endl;
+	} else {
+		cout << endl;
+	}
 }
 
 int
@@ -103,16 +122,14 @@ main (int argc, char *argv[])
 		}
 	#endif	/* DEBUG */
 
-	cout << "Client requests:" << endl;
 	while(client.requests.empty() == false) {
 		tuple<string, string, int> request = client.requests.front();
 		client.requests.pop();
 
-		cout << "Request: " << get<0>(request) << " " << get<1>(request) << " " << get<2>(request) << endl;
-
 		string action = get<1>(request);
 		if (action == "REQUEST") {
-			// TODO Request
+			cout << "REQUEST " << get<0>(request) << " " << get<2>(request) << endl;
+			request_operation(request);
 		} else {
 			// TODO Action
 		}
@@ -123,4 +140,18 @@ main (int argc, char *argv[])
 	#endif	 /* DEBUG */
 
 exit (0);
+}
+
+std::string init_client(int argc, char **argv) {
+    if (argc != 3) {
+        return "Usage: " + std::string(argv[0]) + " <server_host> <input file>\n";
+    }
+
+    client = MyClient(argv[2]);
+
+    if (client.requests.empty()) {
+        return "Error: Unable to load data.\n";
+    }
+
+    return "";
 }

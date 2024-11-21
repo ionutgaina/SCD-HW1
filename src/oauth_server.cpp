@@ -10,15 +10,18 @@
 
 using namespace std;
 
+DB db;
+
 AuthResponse *
 auth_1_svc(AuthRequest arg1,  struct svc_req *rqstp)
 {
-	static AuthResponse  result;
+	static AuthResponse result;
 
 	string id = arg1.user_id;
-
-	if (!db.is_client(id)) {
+	
+	if (db.clients.find(id) == db.clients.end()) {
 		result.status = StatusCode::USER_NOT_FOUND_;
+		result.token = "";
 		return &result;
 	}
 
@@ -46,12 +49,11 @@ approve_token_1_svc(ApproveTokenRequest arg1,  struct svc_req *rqstp)
 
 			if (approval.first == "*" && approval.second == "-") {
 				client.second.is_signed = false;
-				client.second.perms = "";
 			} else {
 				client.second.is_signed = true;
-				client.second.perms = approval.second;
 			}
-			
+			client.second.perms = approval.second;
+
 			result.token = (char *)token.c_str();
 			result.perms = (char *)client.second.perms.c_str();
 			result.status = StatusCode::OK_;
@@ -59,6 +61,8 @@ approve_token_1_svc(ApproveTokenRequest arg1,  struct svc_req *rqstp)
 		}
 	}
 
+	result.token = "";
+	result.perms = "";
 	result.status = StatusCode::REQUEST_DENIED_;
 	return &result;
 }
@@ -72,12 +76,37 @@ oauth_access_token_1_svc(OauthAccessTokenRequest arg1,  struct svc_req *rqstp)
 	string token = arg1.token;
 	bool is_refresh_token = arg1.is_refresh_token;
 
+	cout << "  RequestToken = " << token << endl;
+
 	if (!db.is_client(id)) {
+		result.token = "";
+		result.refresh_token = "";
+		result.ttl = 0;
+		result.status = StatusCode::USER_NOT_FOUND_;
+		return &result;
+	}
+
+	auto client = db.clients[id];
+
+	if (!client.is_signed) {
 		result.status = StatusCode::REQUEST_DENIED_;
 		return &result;
 	}
 
-	// Check if the token is valid
+	// UPDATE TOKEN
+	client.access_token = generate_access_token((char *)token.c_str());
+	client.ttl = db.token_validity;
+	cout << "  AccessToken = " << client.access_token << endl;
+
+	if (is_refresh_token) {
+		client.refresh_token = generate_access_token((char *)client.access_token.c_str());
+		cout << "  RefreshToken = " << client.refresh_token << endl;
+	}
+
+	result.token = (char *)client.access_token.c_str();
+	result.refresh_token = (char *)client.refresh_token.c_str();
+	result.ttl = client.ttl;
+	result.status = StatusCode::OK_;
 	return &result;
 }
 
@@ -86,9 +115,30 @@ oauth_refresh_token_1_svc(OauthRefreshTokenRequest arg1,  struct svc_req *rqstp)
 {
 	static OauthAccessTokenResponse  result;
 
-	/*
-	 * insert server code here
-	 */
+	string refresh_token = arg1.token;
+	
+	for (auto& client : db.clients) {
+		auto id = client.first;
+
+		if (client.second.refresh_token == refresh_token) {
+			// UPDATE TOKENs
+			cout << "BEGIN " << id << " AUTHZ REFRESH\n";
+
+			client.second.access_token = generate_access_token((char *)id.c_str());
+			cout << "  AccessToken = " << client.second.access_token << "\n";
+			
+			client.second.refresh_token = generate_access_token((char *)client.second.access_token.c_str());
+    		cout << "  RefreshToken = " << client.second.refresh_token << "\n";
+			client.second.ttl = db.token_validity;
+
+			// CREATE RESPONSE
+			result.token = (char *)client.second.access_token.c_str();
+			result.refresh_token = (char *)client.second.refresh_token.c_str();
+			result.ttl = client.second.ttl;
+			result.status = StatusCode::OK_;
+			return &result;
+		}
+	}
 
 	return &result;
 }
@@ -103,4 +153,18 @@ execute_action_1_svc(ExecuteActionRequest arg1,  struct svc_req *rqstp)
 	 */
 
 	return &result;
+}
+
+string init_server(int argc, char **argv) {
+    if (argc != 5) {
+        return "Usage: " + string(argv[0]) + " <client file> <resources file> <approval file> <token validity>\n";
+    }
+
+    db = DB(argv[1], argv[2], argv[3], stoi(argv[4]));
+
+    if (db.clients.empty() || db.resources.empty() || db.approvals.empty()) {
+        return "Error: Unable to load data.\n";
+    }
+    
+    return "";
 }

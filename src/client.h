@@ -51,7 +51,6 @@ class MyClient {
 
         explicit MyClient(const std::string& input_file) {
             load_input(input_file);
-            print_all();
         }
 
         ~MyClient() = default;

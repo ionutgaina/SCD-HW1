@@ -3,9 +3,9 @@
 CLIENT = oauth_client
 SERVER = oauth_server
 
-SOURCES_CLNT.cpp = client.cpp
+SOURCES_CLNT.cpp =
 SOURCES_CLNT.h = client.h
-SOURCES_SVC.cpp = server.cpp
+SOURCES_SVC.cpp =
 SOURCES_SVC.h = server.h
 SOURCES.x = oauth.x
 
