@@ -37,10 +37,6 @@ approve_token_1_svc(ApproveTokenRequest arg1,  struct svc_req *rqstp)
 
 	string token = arg1.token;
 
-	// verify each token if it is valid
-	// take each client id and check if it is valid with generate_access_token
-	// if it is valid, then approve the token
-
 	for (auto& client : db.clients) {
 		auto id = client.first;
 
@@ -49,15 +45,18 @@ approve_token_1_svc(ApproveTokenRequest arg1,  struct svc_req *rqstp)
 			db.approvals.pop();
 
 			if (approval.first == "*" && approval.second == "-") {
-				result.token = (char *)token.c_str();
-				return &result;
+				client.second.is_signed = false;
+				client.second.perms = "";
+			} else {
+				client.second.is_signed = true;
+				client.second.perms = approval.second;
 			}
 			
-
+			result.token = (char *)token.c_str();
+			result.perms = (char *)client.second.perms.c_str();
 			result.status = StatusCode::OK_;
 			return &result;
 		}
-
 	}
 
 	result.status = StatusCode::REQUEST_DENIED_;

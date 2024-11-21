@@ -20,6 +20,7 @@ struct ClientData {
     std::string access_token;
     std::string refresh_token;
     std::string perms;
+    bool is_signed = false;
     int ttl;
 };
 
