@@ -16,6 +16,13 @@ extern DB db;
 
 std::string init_server(int argc, char **argv);
 
+struct ClientData {
+    std::string access_token;
+    std::string refresh_token;
+    std::string perms;
+    int ttl;
+};
+
 class DB {
 private:
     bool read_file(const std::string& filename, std::vector<std::string>& lines) {
@@ -48,7 +55,7 @@ private:
         }
 
         for (int i = 1; i <= num_clients; i++) {
-            clients[lines[i]] = "default_value";
+            save_client(lines[i], "", "");
         }
     }
 
@@ -96,7 +103,7 @@ private:
     }
 
 public:
-    std::unordered_map<std::string, std::string> clients;
+    std::unordered_map<std::string, ClientData> clients;
     std::unordered_set<std::string> resources;
     std::queue<std::pair<std::string, std::string>> approvals;
     int token_validity;
@@ -109,6 +116,7 @@ public:
         load_approvals(approval_file);
     }
 
+    DB() = default;
     ~DB() = default;
 
     void print_all() {
@@ -128,6 +136,16 @@ public:
             std::cout << approvals_copy.front().first << " " << approvals_copy.front().second << std::endl;
             approvals_copy.pop();
         }
+    }
+
+    bool is_client(const std::string& id) {
+        return clients.find(id) != clients.end();
+    }
+
+    void save_client(const std::string& id, const std::string& access_token, const std::string& refresh_token) {
+        clients[id].access_token = access_token;
+        clients[id].refresh_token = refresh_token;
+        clients[id].ttl = token_validity;
     }
 };
 

@@ -6,15 +6,26 @@
 
 #include "oauth.h"
 #include "server.h"
+#include "token.h"
+
+using namespace std;
 
 AuthResponse *
 auth_1_svc(AuthRequest arg1,  struct svc_req *rqstp)
 {
 	static AuthResponse  result;
 
-	/*
-	 * insert server code here
-	 */
+	string id = arg1.user_id;
+
+	if (!db.is_client(id)) {
+		result.status = StatusCode::USER_NOT_FOUND_;
+		return &result;
+	}
+
+	char *token = generate_access_token((char*)id.c_str());
+
+	result.token = token;
+	result.status = StatusCode::OK_;
 
 	return &result;
 }
@@ -24,10 +35,32 @@ approve_token_1_svc(ApproveTokenRequest arg1,  struct svc_req *rqstp)
 {
 	static ApproveTokenResponse  result;
 
-	/*
-	 * insert server code here
-	 */
+	string token = arg1.token;
 
+	// verify each token if it is valid
+	// take each client id and check if it is valid with generate_access_token
+	// if it is valid, then approve the token
+
+	for (auto& client : db.clients) {
+		auto id = client.first;
+
+		if (generate_access_token((char *)id.c_str()) == token) {
+			pair<string, string> approval = db.approvals.front();
+			db.approvals.pop();
+
+			if (approval.first == "*" && approval.second == "-") {
+				result.token = (char *)token.c_str();
+				return &result;
+			}
+			
+
+			result.status = StatusCode::OK_;
+			return &result;
+		}
+
+	}
+
+	result.status = StatusCode::REQUEST_DENIED_;
 	return &result;
 }
 
@@ -36,10 +69,16 @@ oauth_access_token_1_svc(OauthAccessTokenRequest arg1,  struct svc_req *rqstp)
 {
 	static OauthAccessTokenResponse  result;
 
-	/*
-	 * insert server code here
-	 */
+	string id = arg1.user_id;
+	string token = arg1.token;
+	bool is_refresh_token = arg1.is_refresh_token;
 
+	if (!db.is_client(id)) {
+		result.status = StatusCode::REQUEST_DENIED_;
+		return &result;
+	}
+
+	// Check if the token is valid
 	return &result;
 }
 

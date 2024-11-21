@@ -54,7 +54,7 @@ xdr_ApproveTokenResponse (XDR *xdrs, ApproveTokenResponse *objp)
 
 	 if (!xdr_string (xdrs, &objp->token, ~0))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->perms))
+	 if (!xdr_string (xdrs, &objp->perms, ~0))
 		 return FALSE;
 	 if (!xdr_StatusCode (xdrs, &objp->status))
 		 return FALSE;

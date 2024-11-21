@@ -44,13 +44,49 @@ using namespace std;
 // 		clnt_perror (clnt, "call failed");
 // 	}
 
+void
+request_operation(tuple<string, string, int> operation)
+{
+	string id = get<0>(operation);
+
+	AuthRequest req = {(char *)id.c_str()};
+	AuthResponse *result = auth_1(req, clnt);
+
+	if (result == (AuthResponse *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+
+	if (result->status == StatusCode::USER_NOT_FOUND_) {
+		cout << "USER_NOT_FOUND\n" << endl;
+		return;
+	}
+
+	
+	ApproveTokenRequest approve_token_1_arg1 = {result->token};
+	ApproveTokenResponse *result_2 = approve_token_1(approve_token_1_arg1, clnt);
+
+	if (result_2 == (ApproveTokenResponse *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	
+	OauthAccessTokenRequest oauth_access_token_1_arg1 = {result->token};
+	OauthAccessTokenResponse *result_3 = oauth_access_token_1(oauth_access_token_1_arg1, clnt);
+
+	if (result_3 == (OauthAccessTokenResponse *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+
+	// TODO status check
+	
+}
+
 int
 main (int argc, char *argv[])
 {
 	char *host;
 
 
-	std::string error = init_client(argc, argv);
+	string error = init_client(argc, argv);
 	if (error != "") {
 		printf("%s", error.c_str());
 		exit(1);
@@ -69,12 +105,12 @@ main (int argc, char *argv[])
 
 	cout << "Client requests:" << endl;
 	while(client.requests.empty() == false) {
-		std::tuple<std::string, std::string, int> request = client.requests.front();
+		tuple<string, string, int> request = client.requests.front();
 		client.requests.pop();
 
-		cout << "Request: " << std::get<0>(request) << " " << std::get<1>(request) << " " << std::get<2>(request) << endl;
+		cout << "Request: " << get<0>(request) << " " << get<1>(request) << " " << get<2>(request) << endl;
 
-		std::string action = std::get<1>(request);
+		string action = get<1>(request);
 		if (action == "REQUEST") {
 			// TODO Request
 		} else {

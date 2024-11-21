@@ -13,8 +13,9 @@ TARGETS_SVC.cpp = oauth_svc.cpp oauth_server.cpp oauth_xdr.cpp
 TARGETS_CLNT.cpp = oauth_clnt.cpp oauth_client.cpp oauth_xdr.cpp
 TARGETS = oauth.h oauth_xdr.cpp oauth_clnt.cpp oauth_svc.cpp oauth_client.cpp oauth_server.cpp
 
-OBJECTS_CLNT = $(SOURCES_CLNT.cpp:%.cpp=%.o) $(TARGETS_CLNT.cpp:%.cpp=%.o)
-OBJECTS_SVC = $(SOURCES_SVC.cpp:%.cpp=%.o) $(TARGETS_SVC.cpp:%.cpp=%.o)
+OBJECTS_CLNT = $(SOURCES_CLNT.cpp:.cpp=.o) $(TARGETS_CLNT.cpp:.cpp=.o)
+OBJECTS_SVC = $(SOURCES_SVC.cpp:.cpp=.o) $(TARGETS_SVC.cpp:.cpp=.o)
+
 
 # Compiler flags 
 

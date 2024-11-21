@@ -15,14 +15,14 @@ extern "C" {
 
 
 enum StatusCode {
-	SUCCESS_ = 0,
-	USER_NOT_FOUND_ = 1,
-	REQUEST_DENIED_ = 2,
-	PERMISSION_DENIED_ = 3,
-	TOKEN_EXPIRED_ = 4,
-	RESOURCE_NOT_FOUND_ = 5,
-	OPERATION_NOT_PERMITTED_ = 6,
-	PERMISSION_GRANTED_ = 7,
+    OK_ = 0,
+    PERMISSION_GRANTED_ = 1,
+    PERMISSION_DENIED_ = 2,
+    USER_NOT_FOUND_ = 3,
+    REQUEST_DENIED_ = 4,
+    TOKEN_EXPIRED_ = 5,
+    RESOURCE_NOT_FOUND_ = 6,
+    OPERATION_NOT_PERMITTED_ = 7,
 };
 typedef enum StatusCode StatusCode;
 
@@ -44,7 +44,7 @@ typedef struct ApproveTokenRequest ApproveTokenRequest;
 
 struct ApproveTokenResponse {
 	char *token;
-	int perms;
+	char *perms;
 	StatusCode status;
 };
 typedef struct ApproveTokenResponse ApproveTokenResponse;
