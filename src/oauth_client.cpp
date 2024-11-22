@@ -46,7 +46,7 @@ using namespace std;
 // 	}
 
 void
-request_operation(tuple<string, string, int> operation)
+request(tuple<string, string, string> operation)
 {
 	string id = get<0>(operation);
 
@@ -74,7 +74,7 @@ request_operation(tuple<string, string, int> operation)
 	OauthAccessTokenRequest oauth_access_token_1_arg1;
 	oauth_access_token_1_arg1.user_id = (char *)id.c_str();
 	oauth_access_token_1_arg1.token = result->token;
-	oauth_access_token_1_arg1.is_refresh_token = get<2>(operation);
+	oauth_access_token_1_arg1.is_refresh_token = stoi(get<2>(operation));
 	OauthAccessTokenResponse *result_3 = oauth_access_token_1(oauth_access_token_1_arg1, clnt);
 
 	if (result_3 == (OauthAccessTokenResponse *) NULL) {
@@ -87,13 +87,66 @@ request_operation(tuple<string, string, int> operation)
 	}
 
 	cout << result_2->token << " -> " << result_3->token;
+	Token t;
+	t.access_token = result_3->token;
 	if (strlen(result_3->refresh_token) > 0) {
 		cout << "," << result_3->refresh_token << endl;
+		t.refresh_token = result_3->refresh_token;
 	} else {
 		cout << endl;
 	}
+		client.tokens[id] = t;
 }
 
+
+void
+operation(tuple<string, string, string> operation)
+{
+	string token = get<0>(operation);
+	string action = get<1>(operation);
+	string resource = get<2>(operation);
+
+	Token t;
+	if (client.tokens.find(token) != client.tokens.end()) {
+		t = client.tokens[token];
+		token = t.access_token;
+	}
+
+	ExecuteActionRequest execute_action_1_arg1;
+	execute_action_1_arg1.token = (char *)token.c_str();
+	execute_action_1_arg1.action = (char *)action.c_str();
+	execute_action_1_arg1.resource = (char *)resource.c_str();
+
+
+	ExecuteActionResponse *result_5 = execute_action_1(execute_action_1_arg1, clnt);
+
+	if (result_5 == (ExecuteActionResponse *) NULL) {
+		clnt_perror (clnt, "call failed execute request");
+	}
+
+	switch (result_5->status) {
+		case StatusCode::PERMISSION_GRANTED_:
+			cout << "PERMISSION_GRANTED" << endl;
+			break;
+		case StatusCode::PERMISSION_DENIED_:
+			cout << "PERMISSION_DENIED" << endl;
+			break;
+		case StatusCode::OPERATION_NOT_PERMITTED_:
+			cout << "OPERATION_NOT_PERMITTED" << endl;
+			break;
+		case StatusCode::TOKEN_EXPIRED_:
+			
+
+			cout << "TOKEN_EXPIRED" << endl;
+			break;
+		case StatusCode::RESOURCE_NOT_FOUND_:
+			cout << "RESOURCE_NOT_FOUND" << endl;
+			break;
+		default:
+			cout << "UNKNOWN STATUS" << endl;
+			break;
+	}
+}
 int
 main (int argc, char *argv[])
 {
@@ -118,14 +171,14 @@ main (int argc, char *argv[])
 	#endif	/* DEBUG */
 
 	while(client.requests.empty() == false) {
-		tuple<string, string, int> request = client.requests.front();
+		tuple<string, string, string> request_line = client.requests.front();
 		client.requests.pop();
 
-		string action = get<1>(request);
+		string action = get<1>(request_line);
 		if (action == "REQUEST") {
-			request_operation(request);
+			request(request_line);
 		} else {
-			// TODO Action
+			operation(request_line);
 		}
 	}
 

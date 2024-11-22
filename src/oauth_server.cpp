@@ -79,7 +79,7 @@ oauth_access_token_1_svc(OauthAccessTokenRequest arg1,  struct svc_req *rqstp)
 		return &result;
 	}
 
-	auto client = db.clients[id];
+	auto& client = db.clients[id];
 
 	if (db.client_tokens_approval.find(token) == db.client_tokens_approval.end()) {
 		result.token = "";
@@ -91,6 +91,7 @@ oauth_access_token_1_svc(OauthAccessTokenRequest arg1,  struct svc_req *rqstp)
 
 	// UPDATE TOKEN
 	client.access_token = generate_access_token((char *)token.c_str());
+	client.perms = db.client_tokens_approval[token];
 	client.refresh_token = "";
 	client.ttl = db.token_validity;
 	cout << "  AccessToken = " << client.access_token << endl;
@@ -121,7 +122,7 @@ oauth_refresh_token_1_svc(OauthRefreshTokenRequest arg1,  struct svc_req *rqstp)
 			// UPDATE TOKENs
 			cout << "BEGIN " << id << " AUTHZ REFRESH\n";
 
-			client.second.access_token = generate_access_token(efresh_token);
+			client.second.access_token = generate_access_token((char *)refresh_token.c_str());
 			cout << "  AccessToken = " << client.second.access_token << "\n";
 			
 			client.second.refresh_token = generate_access_token((char *)client.second.access_token.c_str());
@@ -145,9 +146,47 @@ execute_action_1_svc(ExecuteActionRequest arg1,  struct svc_req *rqstp)
 {
 	static ExecuteActionResponse  result;
 
-	/*
-	 * insert server code here
-	 */
+	string token = arg1.token;
+	string action = arg1.action;
+	string resource = arg1.resource;
+
+	ClientData* client = nullptr;
+
+	for (auto& c : db.clients) {
+		if (c.second.access_token == token) {
+			client = &c.second;
+			break;
+		}
+	}
+
+	if (client == nullptr) {
+		cout << "DENY (" << action << "," << resource << ",,0)" << endl;
+		result.status = StatusCode::PERMISSION_DENIED_;
+		return &result;
+	}
+
+	if (client->ttl <= 0) {
+		cout << "DENY (" << action << "," << resource << ",,0)" << endl;
+		result.status = StatusCode::TOKEN_EXPIRED_;
+		return &result;
+	}
+
+	client->ttl--;
+	
+	if (!db.find_resource(resource)) {
+		cout << "DENY (" << action << "," << resource << ',' << token << ',' << client->ttl << ')' << endl;
+		result.status = StatusCode::RESOURCE_NOT_FOUND_;
+		return &result;
+	}
+
+	if (!db.has_approval(resource, action, client)) {
+		cout << "DENY (" << action << "," << resource << ',' << token << ',' << client->ttl << ')' << endl;
+		result.status = StatusCode::OPERATION_NOT_PERMITTED_;
+		return &result;
+	}
+
+	cout << "PERMIT (" << action << "," << resource << ',' << token << ',' << client->ttl << ')' << endl;
+	result.status = StatusCode::PERMISSION_GRANTED_;
 
 	return &result;
 }

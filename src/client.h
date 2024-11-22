@@ -8,6 +8,12 @@
 #include <tuple>
 #include <string>
 #include <vector>
+#include <unordered_map>
+
+struct Token{
+    std::string access_token;
+    std::string refresh_token;
+};
 
 class MyClient {
     private:
@@ -33,19 +39,20 @@ class MyClient {
             for (const auto& line : lines) {
                 std::string id;
                 std::string action;
-                int value;
+                std::string value;
 
                 std::stringstream ss(line);
                 std::getline(ss, id, ',');
                 std::getline(ss, action, ',');
-                ss >> value;
+                std::getline(ss, value, ',');
 
                 requests.push(std::make_tuple(id, action, value));
             }
         }
 
     public:
-        std::queue<std::tuple<std::string, std::string, int>> requests;
+        std::queue<std::tuple<std::string, std::string, std::string>> requests;
+        std::unordered_map<std::string, Token> tokens;
 
         MyClient() = default;
 
@@ -57,7 +64,7 @@ class MyClient {
 
         void print_all() const {
             std::cout << "Client Input:" << std::endl;
-            std::queue<std::tuple<std::string, std::string, int>> requests_copy = requests;
+            std::queue<std::tuple<std::string, std::string, std::string>> requests_copy = requests;
             while (!requests_copy.empty()) {
                 std::cout << std::get<0>(requests_copy.front()) << " " 
                           << std::get<1>(requests_copy.front()) << " "

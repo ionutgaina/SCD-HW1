@@ -123,6 +123,8 @@ public:
             std::cout << temp.front() << std::endl;
             temp.pop();
         }
+
+        std::cout << "Token Validity: " << token_validity << std::endl;
     }
 
     bool is_client(const std::string& id) {
@@ -134,6 +136,50 @@ public:
         clients[id].refresh_token = refresh_token;
         clients[id].ttl = token_validity;
     }
+    
+    bool find_resource(const std::string& resource) {
+        return resources.find(resource) != resources.end();
+    }
+    
+bool has_approval(const std::string& resource, const std::string& action, const ClientData* client) {
+    if (!client) {
+        return false;
+    }
+
+    std::string action_short;
+    if (action == "READ") {
+        action_short = "R";
+    } else if (action == "INSERT") {
+        action_short = "I";
+    } else if (action == "MODIFY") {
+        action_short = "M";
+    } else if (action == "DELETE") {
+        action_short = "D";
+    } else if (action == "EXECUTE") {
+        action_short = "X";
+    } else {
+        return false;
+    }
+
+    std::string perms = client->perms; 
+    std::stringstream ss(perms);
+    std::string item;
+    std::vector<std::string> items;
+
+    while (std::getline(ss, item, ',')) {
+        items.push_back(item);
+    }
+
+    for (size_t i = 0; i < items.size() - 1; i += 2) {
+        if (items[i] == resource && items[i + 1].find(action_short) != std::string::npos) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 };
+
 
 #endif // SERVER_H
