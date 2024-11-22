@@ -94,6 +94,7 @@ request(tuple<string, string, string> operation)
 		t.refresh_token = result_3->refresh_token;
 	} else {
 		cout << endl;
+		t.refresh_token = "";
 	}
 		client.tokens[id] = t;
 }
@@ -124,6 +125,23 @@ operation(tuple<string, string, string> operation)
 		clnt_perror (clnt, "call failed execute request");
 	}
 
+	if (result_5->status == StatusCode::TOKEN_EXPIRED_) {
+		if (t.refresh_token != "") {
+			OauthRefreshTokenRequest oauth_refresh_token_1_arg1;
+			oauth_refresh_token_1_arg1.token = (char *)t.refresh_token.c_str();
+			OauthAccessTokenResponse *result_refresh = oauth_refresh_token_1(oauth_refresh_token_1_arg1, clnt);
+			Token t;
+			t.access_token = result_refresh->token;
+			t.refresh_token = result_refresh->refresh_token;
+			string id = get<0>(operation);
+			client.tokens[id] = t;
+
+			
+			execute_action_1_arg1.token = (char *)t.access_token.c_str();
+			result_5 = execute_action_1(execute_action_1_arg1, clnt);
+		}
+	}
+
 	switch (result_5->status) {
 		case StatusCode::PERMISSION_GRANTED_:
 			cout << "PERMISSION_GRANTED" << endl;
@@ -135,8 +153,6 @@ operation(tuple<string, string, string> operation)
 			cout << "OPERATION_NOT_PERMITTED" << endl;
 			break;
 		case StatusCode::TOKEN_EXPIRED_:
-			
-
 			cout << "TOKEN_EXPIRED" << endl;
 			break;
 		case StatusCode::RESOURCE_NOT_FOUND_:

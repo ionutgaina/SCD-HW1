@@ -38,4 +38,4 @@ $(SERVER): $(OBJECTS_SVC)
 	$(CXX) $(CXXFLAGS) -o $(SERVER) $(OBJECTS_SVC) $(LDFLAGS)
 
 clean:
-	$(RM) core *.o $(CLIENT) $(SERVER)
+	$(RM) core *.o *.out $(CLIENT) $(SERVER)

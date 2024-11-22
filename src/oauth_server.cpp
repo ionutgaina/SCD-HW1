@@ -166,7 +166,9 @@ execute_action_1_svc(ExecuteActionRequest arg1,  struct svc_req *rqstp)
 	}
 
 	if (client->ttl <= 0) {
-		cout << "DENY (" << action << "," << resource << ",,0)" << endl;
+		if (client->refresh_token == "") {
+			cout << "DENY (" << action << "," << resource << ",,0)" << endl;
+		}
 		result.status = StatusCode::TOKEN_EXPIRED_;
 		return &result;
 	}
